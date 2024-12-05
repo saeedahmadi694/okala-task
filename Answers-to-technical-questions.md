@@ -18,7 +18,7 @@
 
 **Code Snippet:**
 
-Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   public record GetCryptoInfoInput(string Base, List? Types)  {      [JsonIgnore]      public string NormalizeBase => Base.ToUpper();  };  // Usage  var request = new CryptoRequest("USD", ["USD","EUR","JUP"]);   `
+`   public record GetCryptoInfoInput(string Base, List? Types)  {      [JsonIgnore]      public string NormalizeBase => Base.ToUpper();  };  // Usage  var request = new CryptoRequest("USD", ["USD","EUR","JUP"]);   `
 
 #### 3\. **How would you track down a performance issue in production? Have you ever had to do this?**
 
@@ -46,4 +46,4 @@ Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQL
 
 #### 6\. **Please, describe yourself using JSON.**
 
-Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   {    "name": "Saeed Ahmadi",    "role": "Software Developer",    "skills": ["C#", ".NET Core", "ASP.NET MVC", "RESTful APIs", "Git"],    "experience": "More than 3 years",    "hobbies": ["Reading books", "Cycling", "Playing guitar"]  }   `
+ ` {    "name": "Saeed Ahmadi",    "role": "Software Developer",    "skills": ["C#", ".NET Core", "ASP.NET MVC", "RESTful APIs", "Git"],    "experience": "More than 3 years",    "hobbies": ["Reading books", "Music", "Video game"]  }   `
