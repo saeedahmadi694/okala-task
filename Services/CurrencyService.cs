@@ -1,4 +1,3 @@
-// Services/CurrencyConversionService.cs
 using Microsoft.Extensions.Options;
 using okala_task.Configs;
 using okala_task.Dtos;
@@ -18,7 +17,7 @@ public class CurrencyService : ICurrencyService
 
     public async Task<ExchangeRatesDto> GetLatestRatesAsync(string baseCurrency, List<string>? symbols)
     {
-        if (symbols == null || symbols.Count == 0)
+        if (symbols == null || !symbols.Any())
             symbols = _config.DefaultSymbols;
 
         var joinedSymbols = string.Join(",", symbols);

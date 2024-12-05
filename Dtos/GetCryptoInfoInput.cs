@@ -1,10 +1,10 @@
 ﻿using okala_task.Configs;
+using System.Text.Json.Serialization;
 
 namespace okala_task.Dtos;
 
-public class ExchangeRatesDto
+public record GetCryptoInfoInput(string Base, List<string>? Types)
 {
-    public string Base { get; set; }
-    public DateTime Date { get; set; }
-    public Dictionary<string, decimal> Rates { get; set; }
-}
+    [JsonIgnore]
+    public string NormalizeBase => Base.ToUpper();
+};

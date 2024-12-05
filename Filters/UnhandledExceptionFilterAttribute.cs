@@ -36,12 +36,8 @@ public class UnhandledExceptionFilterAttribute : ExceptionFilterAttribute
             {
                 Status = StatusCodes.Status500InternalServerError,
                 Title = "Internal server error",
-                Detail = context.Exception.Message,                
-            })
-            {
-                StatusCode = StatusCodes.Status500InternalServerError
-            };
-
+                Detail = context.Exception.Message,
+            });
 
             context.Result = result;
         }

@@ -1,8 +1,11 @@
-﻿using okala_task.Configs;
+﻿using Newtonsoft.Json;
+using okala_task.Configs;
 
 namespace okala_task.Dtos;
 
-public record GetCryptoInfoInput(string Base, List<string>? Types)
+public class ExchangeRatesDto
 {
-    public string NormalizeBase => Base.ToUpper();
-};
+    public string Base { get; set; }
+    public DateTime Date { get; set; }
+    public Dictionary<string, decimal> Rates { get; set; }
+}

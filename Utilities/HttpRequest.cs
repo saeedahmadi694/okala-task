@@ -5,7 +5,6 @@ using System.Text;
 
 namespace okala_task.Utilities;
 
-
 public class HttpRequest : IHttpRequest
 {
     private readonly IHttpClientFactory _httpClientFactory;
@@ -15,10 +14,11 @@ public class HttpRequest : IHttpRequest
         _httpClientFactory = httpClientFactory;
     }
 
-    public async Task<T> GetAsync<T>(string url, Dictionary<string, string>? headers = null, int TimeoutWithMinuteScale = 5)
+    private HttpClient CreateHttpClient(Dictionary<string, string>? headers = null, int timeoutMinutes = 5)
     {
         var httpClient = _httpClientFactory.CreateClient();
-        httpClient.Timeout = TimeSpan.FromMinutes(TimeoutWithMinuteScale);
+        httpClient.Timeout = TimeSpan.FromMinutes(timeoutMinutes);
+
         if (headers != null)
         {
             foreach (var header in headers)
@@ -27,218 +27,88 @@ public class HttpRequest : IHttpRequest
             }
         }
 
+        return httpClient;
+    }
+
+    private void HandleErrorResponse(HttpResponseMessage response)
+    {
+        if (!response.IsSuccessStatusCode)
+        {
+            string errorMessage = response.StatusCode switch
+            {
+                HttpStatusCode.UnprocessableEntity or HttpStatusCode.BadRequest => "InvalidInputException",
+                _ => $"InvalidInputException => StatusCode : {response.StatusCode}"
+            };
+
+            throw new Exception(errorMessage);
+        }
+    }
+
+    private StringContent CreateJsonContent(object model)
+    {
+        var json = JsonConvert.SerializeObject(model, new JsonSerializerSettings
+        {
+            ContractResolver = new CamelCasePropertyNamesContractResolver(),
+            Formatting = Formatting.Indented
+        });
+        return new StringContent(json, Encoding.UTF8, "application/json");
+    }
+
+    public async Task<T> GetAsync<T>(string url, Dictionary<string, string>? headers = null, int timeoutMinutes = 5)
+    {
+        var httpClient = CreateHttpClient(headers, timeoutMinutes);
         var response = await httpClient.GetAsync(url);
+        HandleErrorResponse(response);
+
         var content = await response.Content.ReadAsStringAsync();
-        if (!response.IsSuccessStatusCode)
-        {
-            if (response.StatusCode is HttpStatusCode.UnprocessableEntity or
-                HttpStatusCode.BadRequest)
-            {
-
-                throw new Exception("InvalidInputException");
-            }
-            else
-            {
-                throw new Exception($"InvalidInputException => StatusCode : {response.StatusCode}");
-            }
-        }
-
-        return JsonConvert.DeserializeObject<T>(content);
+        return JsonConvert.DeserializeObject<T>(content)!;
     }
 
-    public async Task<T> PostAsync<T>(string url, object model,
-        Dictionary<string, string>? headers = null)
+    public async Task<T> PostAsync<T>(string url, object model, Dictionary<string, string>? headers = null)
     {
-        var httpClient = _httpClientFactory.CreateClient();
-        var postBody = JsonConvert.SerializeObject(model,
-            new JsonSerializerSettings
-            {
-                ContractResolver = new CamelCasePropertyNamesContractResolver(),
-                Formatting = Newtonsoft.Json.Formatting.Indented
-            });
-        if (headers != null)
-        {
-            foreach (var header in headers)
-            {
-                httpClient.DefaultRequestHeaders.Add(header.Key, header.Value);
-            }
-        }
+        var httpClient = CreateHttpClient(headers);
+        var response = await httpClient.PostAsync(url, CreateJsonContent(model));
+        HandleErrorResponse(response);
 
-        var response = await httpClient.PostAsync(url,
-            new StringContent(postBody, Encoding.UTF8, "application/json"));
         var content = await response.Content.ReadAsStringAsync();
-        if (!response.IsSuccessStatusCode)
-        {
-            if (response.StatusCode is HttpStatusCode.UnprocessableEntity or
-                HttpStatusCode.BadRequest)
-            {
-                throw new Exception("InvalidInputException");
-            }
-            else
-            {
-                throw new Exception(response.StatusCode.ToString());
-            }
-        }
-
-        var result = JsonConvert.DeserializeObject<T>(content);
-        return result;
+        return JsonConvert.DeserializeObject<T>(content)!;
     }
 
-    public async Task<T> PutAsync<T>(string url, object model,
-        Dictionary<string, string>? headers = null)
+    public async Task<T> PutAsync<T>(string url, object model, Dictionary<string, string>? headers = null)
     {
-        var httpClient = _httpClientFactory.CreateClient();
-        var postBody = JsonConvert.SerializeObject(model);
-        if (headers != null)
-        {
-            foreach (var header in headers)
-            {
-                httpClient.DefaultRequestHeaders.Add(header.Key, header.Value);
-            }
-        }
+        var httpClient = CreateHttpClient(headers);
+        var response = await httpClient.PutAsync(url, CreateJsonContent(model));
+        HandleErrorResponse(response);
 
-        var response = await httpClient.PutAsync(url,
-            new StringContent(postBody, Encoding.UTF8, "application/json"));
         var content = await response.Content.ReadAsStringAsync();
-        if (!response.IsSuccessStatusCode)
-        {
-            if (response.StatusCode is HttpStatusCode.UnprocessableEntity or
-                HttpStatusCode.BadRequest)
-            {
-                throw new Exception("InvalidInputException");
-            }
-            else
-            {
-                throw new Exception(response.StatusCode.ToString());
-            }
-        }
-
-        var result = JsonConvert.DeserializeObject<T>(content);
-        return result;
+        return JsonConvert.DeserializeObject<T>(content)!;
     }
 
     public async Task DeleteAsync(string url, Dictionary<string, string>? headers = null)
     {
-        var httpClient = _httpClientFactory.CreateClient();
-        if (headers != null)
-        {
-            foreach (var header in headers)
-            {
-                httpClient.DefaultRequestHeaders.Add(header.Key, header.Value);
-            }
-        }
-
+        var httpClient = CreateHttpClient(headers);
         var response = await httpClient.DeleteAsync(url);
-        if (!response.IsSuccessStatusCode)
-        {
-            if (response.StatusCode is HttpStatusCode.UnprocessableEntity or
-                HttpStatusCode.BadRequest)
-            {
-                throw new Exception("InvalidInputException");
-            }
-            else
-            {
-                throw new Exception(response.StatusCode.ToString());
-            }
-        }
+        HandleErrorResponse(response);
     }
 
     public async Task PostAsync(string url, object model, Dictionary<string, string>? headers = null)
     {
-        var httpClient = _httpClientFactory.CreateClient();
-        var postBody = JsonConvert.SerializeObject(model,
-            new JsonSerializerSettings
-            {
-                ContractResolver = new CamelCasePropertyNamesContractResolver(),
-                Formatting = Newtonsoft.Json.Formatting.Indented
-            });
-        if (headers != null)
-        {
-            foreach (var header in headers)
-            {
-                httpClient.DefaultRequestHeaders.Add(header.Key, header.Value);
-            }
-        }
-
-        var response = await httpClient.PostAsync(url,
-            new StringContent(postBody, Encoding.UTF8, "application/json"));
-        var content = await response.Content.ReadAsStringAsync();
-        if (!response.IsSuccessStatusCode)
-        {
-            if (response.StatusCode is HttpStatusCode.UnprocessableEntity or
-                HttpStatusCode.BadRequest)
-            {
-                throw new Exception("InvalidInputException");
-            }
-            else
-            {
-                throw new Exception(response.StatusCode.ToString());
-            }
-        }
-
-        return;
+        var httpClient = CreateHttpClient(headers);
+        var response = await httpClient.PostAsync(url, CreateJsonContent(model));
+        HandleErrorResponse(response);
     }
 
     public async Task GetAsync(string url, Dictionary<string, string>? headers = null)
     {
-
-        var httpClient = _httpClientFactory.CreateClient();
-        if (headers != null)
-        {
-            foreach (var header in headers)
-            {
-                httpClient.DefaultRequestHeaders.Add(header.Key, header.Value);
-            }
-        }
-
+        var httpClient = CreateHttpClient(headers);
         var response = await httpClient.GetAsync(url);
-        var content = await response.Content.ReadAsStringAsync();
-        if (!response.IsSuccessStatusCode)
-        {
-            if (response.StatusCode is HttpStatusCode.UnprocessableEntity or
-                HttpStatusCode.BadRequest)
-            {
-
-                throw new Exception("InvalidInputException");
-            }
-            else
-            {
-                throw new Exception($"InvalidInputException => StatusCode : {response.StatusCode}");
-            }
-        }
-
-        return;
+        HandleErrorResponse(response);
     }
 
     public async Task PutAsync(string url, object model, Dictionary<string, string>? headers = null)
     {
-        var httpClient = _httpClientFactory.CreateClient();
-        var postBody = JsonConvert.SerializeObject(model);
-        if (headers != null)
-        {
-            foreach (var header in headers)
-            {
-                httpClient.DefaultRequestHeaders.Add(header.Key, header.Value);
-            }
-        }
-
-        var response = await httpClient.PutAsync(url,
-            new StringContent(postBody, Encoding.UTF8, "application/json"));
-        var content = await response.Content.ReadAsStringAsync();
-        if (!response.IsSuccessStatusCode)
-        {
-            if (response.StatusCode is HttpStatusCode.UnprocessableEntity or
-                HttpStatusCode.BadRequest)
-            {
-                throw new Exception("InvalidInputException");
-            }
-            else
-            {
-                throw new Exception(response.StatusCode.ToString());
-            }
-        }
-
-
-        return;
+        var httpClient = CreateHttpClient(headers);
+        var response = await httpClient.PutAsync(url, CreateJsonContent(model));
+        HandleErrorResponse(response);
     }
 }
